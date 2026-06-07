@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ümlaüt.fÿi</title>
+  <meta name="description" content="Convert any text to its umlaut form instantly. Free, fast, no signup.">
+  <meta property="og:title" content="ümlaüt.fÿi">
+  <meta property="og:description" content="Convert any text to its umlaut form instantly.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Metal+Mania&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0d;
+      --surface:   #161616;
+      --border:    #2a2a2a;
+      --text:      #e8e8e8;
+      --muted:     #666;
+      --accent:    #c9a84c;
+      --accent-dim:#7a6020;
+      --success:   #4caf50;
+      --radius:    10px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    header {
+      text-align: center;
+      padding: 3rem 1rem 1.5rem;
+    }
+
+    .logo {
+      font-family: 'Metal Mania', cursive;
+      font-size: clamp(2.4rem, 8vw, 5rem);
+      color: var(--accent);
+      letter-spacing: 0.03em;
+      line-height: 1;
+      text-shadow: 0 0 40px rgba(201,168,76,0.25);
+    }
+
+    .tagline {
+      margin-top: 0.6rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Main converter ──────────────────────────── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 3rem;
+      width: 100%;
+    }
+
+    .converter {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      width: 100%;
+      max-width: 900px;
+      align-items: start;
+    }
+
+    @media (max-width: 640px) {
+      .converter {
+        grid-template-columns: 1fr;
+      }
+      .arrow { display: none; }
+    }
+
+    /* ── Panels ──────────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .char-count {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    textarea, .output-text {
+      width: 100%;
+      min-height: 280px;
+      padding: 1rem;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      resize: vertical;
+      outline: none;
+    }
+
+    textarea::placeholder { color: var(--muted); }
+    textarea { display: block; }
+
+    .output-text {
+      display: block;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--accent);
+    }
+
+    .output-text:empty::after {
+      content: 'Ümlaut output appëars hërë…';
+      color: var(--muted);
+      font-style: normal;
+    }
+
+    .panel-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0.65rem 1rem;
+      border-top: 1px solid var(--border);
+      gap: 0.5rem;
+    }
+
+    /* ── Buttons ─────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      font-family: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+
+    .btn:hover { color: var(--text); border-color: #444; }
+
+    .btn-primary {
+      border-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: rgba(201,168,76,0.08);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-primary.copied {
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .btn svg { flex-shrink: 0; }
+
+    /* ── Arrow divider ───────────────────────────── */
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 2.6rem;
+      color: var(--border);
+    }
+
+    .arrow svg { width: 24px; height: 24px; }
+
+    /* ── Stats bar ───────────────────────────────── */
+    .stats {
+      margin-top: 1.25rem;
+      display: flex;
+      gap: 2rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .stat-value {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── How it works ────────────────────────────── */
+    .info {
+      margin-top: 2.5rem;
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+    }
+
+    .info-card h3 {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .mapping {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .map-pair {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .map-pair .from { color: var(--text); }
+    .map-pair .to   { color: var(--accent); }
+    .map-pair .sep  { color: var(--border); margin: 0 2px; }
+
+    /* ── Footer ──────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 1.25rem 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--accent-dim); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ümlaüt.fÿi</div>
+  <p class="tagline">instant umlaut text converter</p>
+</header>
+
+<main>
+  <div class="converter">
+
+    <!-- Input panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-label">Input</span>
+        <span class="char-count" id="in-count">0 chars</span>
+      </div>
+      <textarea id="input" placeholder="Type or paste text here…" spellcheck="false" autocomplete="off"></textarea>
+      <div class="panel-footer">
+        <button class="btn" id="clear-btn" title="Clear input">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="arrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </div>
+
+    <!-- Output panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-label">Ümlaut</span>
+        <span class="char-count" id="out-count">0 chars</span>
+      </div>
+      <div class="output-text" id="output" aria-live="polite"></div>
+      <div class="panel-footer">
+        <button class="btn btn-primary" id="copy-btn" title="Copy to clipboard">
+          <svg id="copy-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          <span id="copy-label">Copy</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Stats -->
+  <div class="stats" id="stats" style="display:none">
+    <span><span class="stat-value" id="stat-converted">0</span> chars converted</span>
+    <span><span class="stat-value" id="stat-pct">0</span>% umlauted</span>
+  </div>
+
+  <!-- Mapping reference -->
+  <div class="info">
+    <div class="info-grid" id="mapping-grid"></div>
+  </div>
+</main>
+
+<footer>
+  <p>All conversion happens locally in your browser — nothing is sent anywhere.</p>
+</footer>
+
+<script>
+  // ── Umlaut map ──────────────────────────────────────────────────────────
+  const MAP = {
+    'a':'ä','e':'ë','i':'ï','o':'ö','u':'ü','y':'ÿ',
+    'A':'Ä','E':'Ë','I':'Ï','O':'Ö','U':'Ü','Y':'Ÿ'
+  };
+
+  function convert(text) {
+    return text.split('').map(c => MAP[c] ?? c).join('');
+  }
+
+  function countConverted(text) {
+    return text.split('').filter(c => MAP[c] !== undefined).length;
+  }
+
+  // ── DOM refs ────────────────────────────────────────────────────────────
+  const input     = document.getElementById('input');
+  const output    = document.getElementById('output');
+  const inCount   = document.getElementById('in-count');
+  const outCount  = document.getElementById('out-count');
+  const statsEl   = document.getElementById('stats');
+  const statConv  = document.getElementById('stat-converted');
+  const statPct   = document.getElementById('stat-pct');
+  const copyBtn   = document.getElementById('copy-btn');
+  const copyLabel = document.getElementById('copy-label');
+  const clearBtn  = document.getElementById('clear-btn');
+
+  // ── Live conversion ─────────────────────────────────────────────────────
+  input.addEventListener('input', update);
+
+  function update() {
+    const raw = input.value;
+    const converted = convert(raw);
+    const len = raw.length;
+    const nConverted = countConverted(raw);
+
+    output.textContent = converted;
+    inCount.textContent  = `${len} char${len !== 1 ? 's' : ''}`;
+    outCount.textContent = `${len} char${len !== 1 ? 's' : ''}`;
+
+    if (len > 0) {
+      statsEl.style.display = 'flex';
+      statConv.textContent = nConverted;
+      statPct.textContent  = Math.round((nConverted / len) * 100);
+    } else {
+      statsEl.style.display = 'none';
+    }
+  }
+
+  // ── Copy to clipboard ───────────────────────────────────────────────────
+  copyBtn.addEventListener('click', async () => {
+    const text = output.textContent;
+    if (!text) return;
+
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+
+    copyBtn.classList.add('copied');
+    copyLabel.textContent = 'Copied!';
+    setTimeout(() => {
+      copyBtn.classList.remove('copied');
+      copyLabel.textContent = 'Copy';
+    }, 2000);
+  });
+
+  // ── Clear ───────────────────────────────────────────────────────────────
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    update();
+    input.focus();
+  });
+
+  // ── Keyboard shortcut: Cmd/Ctrl+Enter to copy ───────────────────────────
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      copyBtn.click();
+    }
+  });
+
+  // ── Build mapping reference grid ─────────────────────────────────────────
+  (function buildGrid() {
+    const grid = document.getElementById('mapping-grid');
+    const lowerPairs = Object.entries(MAP).filter(([k]) => k === k.toLowerCase());
+    const upperPairs = Object.entries(MAP).filter(([k]) => k === k.toUpperCase());
+
+    function card(title, pairs) {
+      const card = document.createElement('div');
+      card.className = 'info-card';
+      const h3 = document.createElement('h3');
+      h3.textContent = title;
+      const div = document.createElement('div');
+      div.className = 'mapping';
+      pairs.forEach(([from, to]) => {
+        const span = document.createElement('span');
+        span.className = 'map-pair';
+        span.innerHTML = `<span class="from">${from}</span><span class="sep">→</span><span class="to">${to}</span>`;
+        div.appendChild(span);
+      });
+      card.appendChild(h3);
+      card.appendChild(div);
+      return card;
+    }
+
+    grid.appendChild(card('Lowercase', lowerPairs));
+    grid.appendChild(card('Uppercase', upperPairs));
+
+    const note = document.createElement('div');
+    note.className = 'info-card';
+    note.innerHTML = `
+      <h3>All other characters</h3>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.5">
+        Numbers, punctuation, consonants, and symbols pass through unchanged.
+      </p>`;
+    grid.appendChild(note);
+  })();
+</script>
+</body>
+</html>
